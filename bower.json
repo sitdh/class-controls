@@ -10,7 +10,8 @@
     "paper-progress": "PolymerElements/paper-progress#^2.0.1",
     "paper-item": "PolymerElements/paper-item#^2.0.0",
     "paper-styles": "PolymerElements/paper-styles#^2.0.0",
-    "iron-pages": "PolymerElements/iron-pages#^2.0.0"
+    "iron-pages": "PolymerElements/iron-pages#^2.0.0",
+    "polymerfire": "firebase/polymerfire#^2.2.1"
   },
   "devDependencies": {
     "web-component-tester": "Polymer/web-component-tester#^6.0.0",
