@@ -1,0 +1,23 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+
+<link rel="import" href="../../bower_components/polymerfire/firebase-app.html">
+
+<dom-module id="app-configure">
+    <firebase-app id="control-config" 
+        auth-domain="" 
+        database-url="" 
+        api-key="" 
+        storage-bucket="" 
+        messaging-sender-id="" 
+        project-id="">
+    </firebase-app>
+    <script>
+        class ApplicationConfigureElement extends Polymer.Element {
+            static get is() { return 'app-configure'; }
+        }
+        window.customElements.define(
+            ApplicationConfigureElement.is, 
+            ApplicationConfigureElement
+        );
+    </script>
+</dom-module>
