@@ -1,0 +1,185 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+
+<link rel="import" href="../../bower_components/app-layout/app-drawer/app-drawer.html">
+<link rel="import" href="../../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html">
+<link rel="import" href="../../bower_components/app-layout/app-header/app-header.html">
+<link rel="import" href="../../bower_components/app-layout/app-header-layout/app-header-layout.html">
+<link rel="import" href="../../bower_components/app-layout/app-scroll-effects/effects/waterfall.html ">
+<link rel="import" href="../../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/communication-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/social-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/av-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/notification-icons.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-progress/paper-progress.html">
+<link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
+
+<link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
+
+<link rel="import" href="empty-page.html">
+
+<dom-module id="control-app">
+  <template>
+    <style is="custom-style">
+      :host {
+        display: block;
+        margin: 0;
+        font-family: 'Roboto', 'Noto', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        background: #f1f1f1;
+        max-height: 368px;
+        --primary-color: var(--paper-light-blue-800);
+        --secondary-color: var(--paper-blue-grey-200);
+        --based-color: #f1f1f1;
+        margin-top: 70px;
+      }
+      app-drawer-layout:not([narrow]) [drawer-toggle] {
+        display: none;
+      }
+      app-toolbar {
+        background-color: var(--primary-color);
+        color: #fff;
+      }
+      paper-icon-button {
+        --paper-icion-button-ink-color: white;
+      }
+      paper-icon-button + [main-title] {
+        margin-left: 24px;
+      }
+      paper-progress {
+        display: block;
+        width: 100%;
+        --paper-progress-active-color: rgba(255, 255, 255, 0.5);
+        --paper-progress-container-color: transparent;
+      }
+      app-header {
+        @apply --layout-fixed-top;
+        color: #fff;
+        --app-header-background-rear-layer: {
+          background-color: #ef6c00;
+        }
+      }
+      app-drawer {
+        --app-drawer-scrim-background: var(--secondary-color);
+        --app-drawer-content-container: {
+          background-color: var(--secondary-color);
+          /**
+           * background-color: #b0bec5;
+           **/
+        }
+      }
+    </style>
+    <!--
+    <h2>Hello [[prop1]]!</h2>
+    -->
+    <app-drawer-layout fullbleed narrow="{{narrow}}">
+      <app-drawer id="drawer" slot="drawer" swipe-open="[[narrow]]">
+        <iron-pages selected="[[authority]]" attr-for-selected="auth-condition" fallback-selection="annonymous">
+          <div class="drawer-contents" auth-condition="annonymous">
+            Please sign-in
+          </div>
+          <div class="drawer-contents" auth-condition="has-authority">
+            <paper-icon-item on-tap="openContent" toggles page-index$="home">
+              <iron-icon icon="icons:home" item-icon slot="item-icon"></iron-icon>
+              Home
+            </paper-icon-item>
+            <paper-icon-item on-tap="openContent" toggles page-index$="another">
+              <iron-icon icon="icons:cloud-download" item-icon slot="item-icon"></iron-icon>
+              Import
+            </paper-icon-item>
+            <paper-icon-item>
+              <iron-icon icon="av:playlist-add-check" item-icon slot="item-icon"></iron-icon>
+              Instrument Source code
+            </paper-icon-item>
+            <paper-icon-item>
+              <iron-icon icon="icons:gavel" item-icon slot="item-icon"></iron-icon>
+              Create Static Call Graph
+            </paper-icon-item>
+            <paper-icon-item>
+              <iron-icon icon="icons:add-box" item-icon slot="item-icon"></iron-icon>
+              Generate Test Case
+            </paper-icon-item>
+            <paper-icon-item>
+              <iron-icon icon="icons:thumbs-up-down" item-icon slot="item-icon"></iron-icon>
+              Refine Input Data
+            </paper-icon-item>
+            <paper-icon-item>
+              <iron-icon icon="notification:adb" item-icon slot="item-icon"></iron-icon>
+              Perform Testing
+            </paper-icon-item>
+            <paper-icon-item>
+              <iron-icon icon="social:poll" item-icon slot="item-icon"></iron-icon>
+              Evaluation
+            </paper-icon-item>
+          </div>
+        </iron-pages>
+      </app-drawer>
+
+      <app-header-layout has-scrolling-region>
+        <app-header slot="header" condenses reveals effects="waterfall">
+          <app-toolbar>
+            <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
+            <div main-title>[[appName]]</div>
+            <paper-icon-button icon="icons:assignment-ind" on-tap="performAuthentication" title="Sign-in"></paper-icon-button>
+            <paper-icon-button icon="icons:help"></paper-icon-button>
+            <paper-icon-button icon="search"></paper-icon-button>
+            <!--
+            <paper-progress value="0" indeterminate bottom-item></paper-progress>
+            -->
+            <paper-progress id="overAllProgress" value="0" bottom-item></paper-progress>
+          </app-toolbar>
+        </app-header>
+
+        <iron-pages selected="[[selectedContent]]" attr-for-selected="content-selector" fallback-selection="annonymous-page">
+          <empty-page app-title="Controls" content-selector="annonymous-page"></empty-page>
+        </iron-pages>
+
+      </app-header-layout>
+
+    </app-drawer-layout>
+
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class ControlApp extends Polymer.Element {
+      static get is() { return 'control-app'; }
+      static get properties() {
+        return {
+          appName: {
+            type: String,
+            reflectToAttribute: true,
+            notify: true,
+          },
+          authority: {
+            type: String,
+            notify: true,
+            value: 'annonymous',
+          },
+          selectedContent: {
+            type: String,
+            notify: true,
+          }
+        };
+      }
+
+      openContent(e) {
+        console.log(e);
+        console.log(e.pageIndex + '-page');
+        this.contentSelector = e.pageIndex + '-page';
+        // this.$.drawer.opened = false;
+      }
+
+      performAuthentication() {
+        this.authority = 'has-authority';
+      }
+    }
+
+    window.customElements.define(ControlApp.is, ControlApp);
+  </script>
+</dom-module>

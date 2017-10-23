@@ -1,0 +1,50 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+
+<dom-module id="empty-page">
+    <template>
+        <style is="custom-style">
+            :host {
+                display: flex;
+                height: 600px;
+                justify-content: center;
+                align-items: center;
+                flex-basis: 100%;
+            }
+            .contents {
+                width: 200px;
+                height: 200px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-flow: column;
+            }
+
+            .contents img {
+                fill: grey;
+            }
+            .app-title {
+                color: grey;
+                font-style: italic;
+                font-size: 0.8em;
+            }
+        </style>
+        <div class="contents">
+            <img src="./src/control-app/images/direction-sign.svg">
+            <div class="app-title">[[appTitle]]</div>
+            
+        </div>
+    </template>
+    <script>
+        class ControlAppEmptyPageElement extends Polymer.Element {
+            static get is() { return 'empty-page'; }
+            static get properties() {
+                return {
+                    appTitle: {
+                        type: String,
+                    }
+                }
+            }
+        }
+        window.customElements.define(ControlAppEmptyPageElement.is, ControlAppEmptyPageElement);
+    </script>
+</dom-module>
