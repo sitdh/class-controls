@@ -19,6 +19,7 @@
 <link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
 
 <link rel="import" href="empty-page.html">
+<link rel="import" href="app-configure.html">
 
 <dom-module id="control-app">
   <template>
@@ -71,9 +72,7 @@
         }
       }
     </style>
-    <!--
-    <h2>Hello [[prop1]]!</h2>
-    -->
+    <app-configure></app-configure>
     <app-drawer-layout fullbleed narrow="{{narrow}}">
       <app-drawer id="drawer" slot="drawer" swipe-open="[[narrow]]">
         <iron-pages selected="[[authority]]" attr-for-selected="auth-condition" fallback-selection="annonymous">
