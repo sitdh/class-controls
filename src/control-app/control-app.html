@@ -1,5 +1,8 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 
+<link rel="import" href="../../bower_components/app-route/app-route.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+
 <link rel="import" href="../../bower_components/app-layout/app-drawer/app-drawer.html">
 <link rel="import" href="../../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html">
 <link rel="import" href="../../bower_components/app-layout/app-header/app-header.html">
@@ -20,6 +23,15 @@
 
 <link rel="import" href="empty-page.html">
 <link rel="import" href="app-configure.html">
+
+<link rel="import" href="../home-page/home-page.html">
+<link rel="import" href="../import-repository-page/import-repository-page.html">
+<link rel="import" href="../instrument-source-code-page/instrument-source-code-page.html">
+<link rel="import" href="../structure-static-call-graph-page/structure-static-call-graph-page.html">
+<link rel="import" href="../generate-test-case-page/generate-test-case-page.html">
+<link rel="import" href="../refine-input-data-page/refine-input-data-page.html">
+<link rel="import" href="../perform-test-page/perform-test-page.html">
+<link rel="import" href="../evaluate-page/evaluate-page.html">
 
 <dom-module id="control-app">
   <template>
@@ -71,8 +83,23 @@
            **/
         }
       }
+      .drawer-contents a,
+      .drawer-contents a:hover,
+      .drawer-contents a:visited {
+        text-decoration: none;
+        color: black;
+      }
     </style>
+
     <app-configure></app-configure>
+
+    <app-location route="{{route}}" use-hash-as-path></app-location>
+    <app-route route="{{route}}" 
+      pattern="/:module" 
+      data="{{routeData}}" 
+      tail="{{subroute}}">
+    </app-route>
+
     <app-drawer-layout fullbleed narrow="{{narrow}}">
       <app-drawer id="drawer" slot="drawer" swipe-open="[[narrow]]">
         <iron-pages selected="[[authority]]" attr-for-selected="auth-condition" fallback-selection="annonymous">
@@ -80,38 +107,61 @@
             Please sign-in
           </div>
           <div class="drawer-contents" auth-condition="has-authority">
-            <paper-icon-item on-tap="openContent" toggles page-index$="home">
-              <iron-icon icon="icons:home" item-icon slot="item-icon"></iron-icon>
-              Home
-            </paper-icon-item>
-            <paper-icon-item on-tap="openContent" toggles page-index$="another">
-              <iron-icon icon="icons:cloud-download" item-icon slot="item-icon"></iron-icon>
-              Import
-            </paper-icon-item>
-            <paper-icon-item>
-              <iron-icon icon="av:playlist-add-check" item-icon slot="item-icon"></iron-icon>
-              Instrument Source code
-            </paper-icon-item>
-            <paper-icon-item>
-              <iron-icon icon="icons:gavel" item-icon slot="item-icon"></iron-icon>
-              Create Static Call Graph
-            </paper-icon-item>
-            <paper-icon-item>
-              <iron-icon icon="icons:add-box" item-icon slot="item-icon"></iron-icon>
-              Generate Test Case
-            </paper-icon-item>
-            <paper-icon-item>
-              <iron-icon icon="icons:thumbs-up-down" item-icon slot="item-icon"></iron-icon>
-              Refine Input Data
-            </paper-icon-item>
-            <paper-icon-item>
-              <iron-icon icon="notification:adb" item-icon slot="item-icon"></iron-icon>
-              Perform Testing
-            </paper-icon-item>
-            <paper-icon-item>
-              <iron-icon icon="social:poll" item-icon slot="item-icon"></iron-icon>
-              Evaluation
-            </paper-icon-item>
+            <a href="[[pathPrefix]]home">
+              <paper-icon-item on-tap="openContent" toggles page-index$="home">
+                <iron-icon icon="icons:home" item-icon slot="item-icon"></iron-icon>
+                Home
+              </paper-icon-item>
+            </a>
+
+            <a href="[[pathPrefix]]import">
+              <paper-icon-item on-tap="openContent" toggles page-index$="another">
+                <iron-icon icon="icons:cloud-download" item-icon slot="item-icon"></iron-icon>
+                Import
+              </paper-icon-item>
+            </a>
+
+            <a href="[[pathPrefix]]instruments">
+              <paper-icon-item>
+                <iron-icon icon="av:playlist-add-check" item-icon slot="item-icon"></iron-icon>
+                Instrument Code
+              </paper-icon-item>
+            </a>
+
+            <a href="[[pathPrefix]]graph">
+              <paper-icon-item>
+                <iron-icon icon="icons:gavel" item-icon slot="item-icon"></iron-icon>
+                Create Static Call Graph
+              </paper-icon-item>
+            </a>
+
+            <a href="[[pathPrefix]]gen-testcase">
+              <paper-icon-item>
+                <iron-icon icon="icons:add-box" item-icon slot="item-icon"></iron-icon>
+                Generate Test Case
+              </paper-icon-item>
+            </a>
+
+            <a href="[[pathPrefix]]refine">
+              <paper-icon-item>
+                <iron-icon icon="icons:thumbs-up-down" item-icon slot="item-icon"></iron-icon>
+                Refine Input Data
+              </paper-icon-item>
+            </a>
+
+            <a href="[[pathPrefix]]perform-test">
+              <paper-icon-item>
+                <iron-icon icon="notification:adb" item-icon slot="item-icon"></iron-icon>
+                Perform Testing
+              </paper-icon-item>
+            </a>
+
+            <a href="[[pathPrefix]]evaluate">
+              <paper-icon-item>
+                <iron-icon icon="social:poll" item-icon slot="item-icon"></iron-icon>
+                Evaluation
+              </paper-icon-item>
+            </a>
           </div>
         </iron-pages>
       </app-drawer>
@@ -131,10 +181,24 @@
           </app-toolbar>
         </app-header>
 
-        <iron-pages selected="[[selectedContent]]" attr-for-selected="content-selector" fallback-selection="annonymous-page">
-          <empty-page app-title="Controls" content-selector="annonymous-page"></empty-page>
-        </iron-pages>
+        <template is="dom-if" if="[[_isAuthenticated(authority)]]">
+          <iron-pages selected="[[routeData.module]]" attr-for-selected="content-selector" fallback-selection="error-page">
+            <empty-page app-title="Controls" content-selector="error-page"></empty-page>
 
+            <home-page content-selector="home" location="[[subroute]]"></home-page>
+            <import-repository-page content-selector="import" location="[[subroute]]"></import-repository-page>
+            <instrument-source-code-page content-selector="instruments" location="[[subroute]]"></instrument-source-code-page>
+            <structure-static-call-graph-page content-selector="graph" location="[[subroute]]"></structure-static-call-graph-page>
+            <generate-test-case-page content-selector="gen-testcase" location="[[subroute]]"></generate-test-case-page>
+            <refine-input-data-page content-selector="refine" location="[{subroute}]"></refine-input-data-page>
+            <perform-test-page content-selector="perform-test" location="[[subroute]]"></perform-test-page>
+            <evaluate-page content-selector="evaluate" location="[[subroute]]"></evaluate-page>
+
+          </iron-pages>
+        </template>
+        <template is="dom-if" if="[[!_isAuthenticated(authority)]]">
+          <empty-page app-title="Controls annonymous"></empty-page>
+        </template>
       </app-header-layout>
 
     </app-drawer-layout>
@@ -143,16 +207,29 @@
 
   <script>
     /**
-     * @customElement
+     * @ustomElement
      * @polymer
      */
     class ControlApp extends Polymer.Element {
       static get is() { return 'control-app'; }
       static get properties() {
         return {
+          pathPrefix: {
+            type: String,
+            value: "#/"
+          },
           appName: {
             type: String,
             reflectToAttribute: true,
+            notify: true,
+          },
+          routeData: {
+            type: Object,
+            notify: true,
+            observer: '_routeObserver',
+          },
+          subroute: {
+            type: Object,
             notify: true,
           },
           authority: {
@@ -176,6 +253,14 @@
 
       performAuthentication() {
         this.authority = 'has-authority';
+      }
+
+      _routeObserver(r) {
+        console.log(r);
+      }
+
+      _isAuthenticated(e) {
+        return (e == 'has-authority');
       }
     }
 
