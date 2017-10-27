@@ -1,5 +1,7 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 
+<link rel="import" href="../../bower_components/polymerfire/firebase-app.html">
+
 <link rel="import" href="../../bower_components/app-route/app-route.html">
 <link rel="import" href="../../bower_components/app-route/app-location.html">
 
@@ -48,25 +50,31 @@
         --based-color: #f1f1f1;
         margin-top: 70px;
       }
+
       app-drawer-layout:not([narrow]) [drawer-toggle] {
         display: none;
       }
+
       app-toolbar {
         background-color: var(--primary-color);
         color: #fff;
       }
+
       paper-icon-button {
         --paper-icion-button-ink-color: white;
       }
+
       paper-icon-button + [main-title] {
         margin-left: 24px;
       }
+
       paper-progress {
         display: block;
         width: 100%;
         --paper-progress-active-color: rgba(255, 255, 255, 0.5);
         --paper-progress-container-color: transparent;
       }
+
       app-header {
         @apply --layout-fixed-top;
         color: #fff;
@@ -74,6 +82,7 @@
           background-color: #ef6c00;
         }
       }
+
       app-drawer {
         --app-drawer-scrim-background: var(--secondary-color);
         --app-drawer-content-container: {
@@ -83,6 +92,7 @@
            **/
         }
       }
+
       .drawer-contents a,
       .drawer-contents a:hover,
       .drawer-contents a:visited {
@@ -102,10 +112,14 @@
 
     <app-drawer-layout fullbleed narrow="{{narrow}}">
       <app-drawer id="drawer" slot="drawer" swipe-open="[[narrow]]">
-        <iron-pages selected="[[authority]]" attr-for-selected="auth-condition" fallback-selection="annonymous">
+
+        <template is="dom-if" if="[[!_isAuthenticated(authority)]]">
           <div class="drawer-contents" auth-condition="annonymous">
             Please sign-in
           </div>
+        </template>
+
+        <template is="dom-if" if="[[_isAuthenticated(authority)]]">
           <div class="drawer-contents" auth-condition="has-authority">
             <a href="[[pathPrefix]]home">
               <paper-icon-item on-tap="openContent" toggles page-index$="home">
@@ -163,11 +177,11 @@
               </paper-icon-item>
             </a>
           </div>
-        </iron-pages>
+        </template>
       </app-drawer>
 
       <app-header-layout has-scrolling-region>
-        <app-header slot="header" condenses reveals effects="waterfall">
+        <app-header slot="header" condenses reveals fixed effects="resize-title">
           <app-toolbar>
             <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
             <div main-title>[[appName]]</div>
@@ -185,7 +199,7 @@
           <iron-pages selected="[[routeData.module]]" attr-for-selected="content-selector" fallback-selection="error-page">
             <empty-page app-title="Controls" content-selector="error-page"></empty-page>
 
-            <home-page content-selector="home" location="[[subroute]]"></home-page>
+            <home-page content-selector="home" user-information="[[user]]" location="[[subroute]]"></home-page>
             <import-repository-page content-selector="import" location="[[subroute]]"></import-repository-page>
             <instrument-source-code-page content-selector="instruments" location="[[subroute]]"></instrument-source-code-page>
             <structure-static-call-graph-page content-selector="graph" location="[[subroute]]"></structure-static-call-graph-page>
@@ -232,6 +246,15 @@
             type: Object,
             notify: true,
           },
+          user: {
+            type: Object,
+            notify: true,
+            value: {
+              "token": null,
+              "info": null
+            },
+            observer: '_userStatusChangeObserver'
+          },
           authority: {
             type: String,
             notify: true,
@@ -244,15 +267,43 @@
         };
       }
 
+      ready() {
+        super.ready();
+        this.authority = (undefined == firebase.auth().currentUser) ? 'annonymous' : 'has-authority';
+        console.log(this.user);
+      }
+
       openContent(e) {
-        console.log(e);
-        console.log(e.pageIndex + '-page');
+        // console.log(e.pageIndex + '-page');
         this.contentSelector = e.pageIndex + '-page';
         // this.$.drawer.opened = false;
       }
 
       performAuthentication() {
-        this.authority = 'has-authority';
+        var _self = this;
+        firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+          .then(function() {
+            var provider = new firebase.auth.GithubAuthProvider();
+            provider.addScope('repo');
+            provider.setCustomParameters({
+              'allow_signup': 'false'
+            })
+
+            return firebase.auth().signInWithPopup(provider).then(function(result) {
+              _self.user.token = result.credential.accessToken;
+              _self.user.info = result.user;
+              _self.authority = 'has-authority';
+              _self.set('route.path', '/home');
+            }).catch(function(error) {
+              var errorCode = error.code;
+              var errorMessage = error.message;
+              var email = error.email;
+
+              var email = error.credential;
+            });
+          }).catch(function(error) {
+            console.error(error);
+          })
       }
 
       _routeObserver(r) {
@@ -260,7 +311,12 @@
       }
 
       _isAuthenticated(e) {
-        return (e == 'has-authority');
+        // this.authority = firebase.auth().currentUser ? 'has-authority' : 'annonymous' ;
+        return undefined != firebase.auth().currentUser;
+      }
+
+      _userStatusChangeObserver(u) {
+        // console.log(u)
       }
     }
 
