@@ -2,11 +2,23 @@
 
 <dom-module id="home-page">
     <template>
-        Home
+        Home [[userInformation]]
     </template>
     <script>
         class HomePageApp extends Polymer.Element {
             static get is() { return 'home-page'; }
+
+            static get properties() {
+                return {
+                    location: {
+                        type: Object
+                    },
+                    userInformation: {
+                        type: Object,
+                        value: null
+                    }
+                }
+            }
         }
         window.customElements.define(HomePageApp.is, HomePageApp);
     </script>

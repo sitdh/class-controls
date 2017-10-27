@@ -1,3 +1,11 @@
-<?xml version="1.0" ?><svg id="Layer_1" style="enable-background:new 0 0 24 24;" version="1.1" viewBox="0 0 24 24" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><style type="text/css">
-	.st0{fill:#1E232D;}
-</style><path class="st0" d="M11,10.4L14.4,7H20V0h-7v5.6L9.6,9H4v7h5.6l2.4,2.4V24h7v-7h-5.6L11,14.6V10.4z M15,2h3v3h-3V2z M9,14H6v-3h3  V14z M14,19h3v3h-3V19z"/></svg>
+<svg width="600" height="600" xmlns="http://www.w3.org/2000/svg">
+
+ <g>
+  <title>background</title>
+  <rect fill="none" id="canvas_background" height="602" width="602" y="-1" x="-1"/>
+ </g>
+ <g>
+  <title>Layer 1</title>
+  <path fill="#4c4c4c" id="svg_1" d="m275.095459,260.15271l84.675476,-84.675476l139.465515,0l0,-174.331879l-174.331909,0l0,139.4655l-84.675461,84.675491l-139.465515,0l0,174.331879l139.465515,0l59.77092,59.770935l0,139.465454l174.331909,0l0,-174.331848l-139.465546,0l-59.770905,-59.770905l0,-104.599152zm99.618225,-209.198246l74.713623,0l0,74.713665l-74.713623,0l0,-74.713665zm-149.427353,298.854649l-74.713654,0l0,-74.713654l74.713654,0l0,74.713654zm124.522781,124.522766l74.713654,0l0,74.713654l-74.713654,0l0,-74.713654z" class="st0"/>
+ </g>
+</svg>

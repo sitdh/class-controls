@@ -113,11 +113,17 @@
     <app-drawer-layout fullbleed narrow="{{narrow}}">
       <app-drawer id="drawer" slot="drawer" swipe-open="[[narrow]]">
 
+        <app-toolbar main-title class="sidebar-menu">
+          [[appName]]
+        </app-toolbar>
+
+        <!--
         <template is="dom-if" if="[[!_isAuthenticated(authority)]]">
           <div class="drawer-contents" auth-condition="annonymous">
             Please sign-in
           </div>
         </template>
+        -->
 
         <template is="dom-if" if="[[_isAuthenticated(authority)]]">
           <div class="drawer-contents" auth-condition="has-authority">
@@ -181,16 +187,14 @@
       </app-drawer>
 
       <app-header-layout has-scrolling-region>
-        <app-header slot="header" condenses reveals fixed effects="resize-title">
+        <!-- app-header slot="header" condenses reveals fixed effects="waterfall" -->
+        <app-header slot="header" fixed>
           <app-toolbar>
             <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
             <div main-title>[[appName]]</div>
             <paper-icon-button icon="icons:assignment-ind" on-tap="performAuthentication" title="Sign-in"></paper-icon-button>
             <paper-icon-button icon="icons:help"></paper-icon-button>
             <paper-icon-button icon="search"></paper-icon-button>
-            <!--
-            <paper-progress value="0" indeterminate bottom-item></paper-progress>
-            -->
             <paper-progress id="overAllProgress" value="0" bottom-item></paper-progress>
           </app-toolbar>
         </app-header>
