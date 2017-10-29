@@ -1,6 +1,7 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 
 <link rel="import" href="../../bower_components/polymerfire/firebase-app.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-auth.html">
 
 <link rel="import" href="../../bower_components/app-route/app-route.html">
 <link rel="import" href="../../bower_components/app-route/app-location.html">
@@ -36,202 +37,205 @@
 <link rel="import" href="../evaluate-page/evaluate-page.html">
 
 <dom-module id="control-app">
-  <template>
-    <style is="custom-style">
-      :host {
-        display: block;
-        margin: 0;
-        font-family: 'Roboto', 'Noto', sans-serif;
-        -webkit-font-smoothing: antialiased;
-        background: #f1f1f1;
-        max-height: 368px;
-        --primary-color: var(--paper-light-blue-800);
-        --secondary-color: var(--paper-blue-grey-200);
-        --based-color: #f1f1f1;
-        margin-top: 70px;
-      }
+    <template>
+        <style is="custom-style">
+            :host {
+                display: block;
+                margin: 0;
+                font-family: 'Roboto', 'Noto', sans-serif;
+                -webkit-font-smoothing: antialiased;
+                background: #f1f1f1;
+                max-height: 368px;
+                --primary-color: var(--paper-light-blue-800);
+                --secondary-color: var(--paper-blue-grey-200);
+                --based-color: #f1f1f1;
+                margin-top: 70px;
+            }
 
-      app-drawer-layout:not([narrow]) [drawer-toggle] {
-        display: none;
-      }
+            app-drawer-layout:not([narrow]) [drawer-toggle] {
+                display: none;
+            }
 
-      app-toolbar {
-        background-color: var(--primary-color);
-        color: #fff;
-      }
+            app-toolbar {
+                background-color: var(--primary-color);
+                color: #fff;
+            }
 
-      paper-icon-button {
-        --paper-icion-button-ink-color: white;
-      }
+            paper-icon-button {
+                --paper-icion-button-ink-color: white;
+            }
 
-      paper-icon-button + [main-title] {
-        margin-left: 24px;
-      }
+            paper-icon-button + [main-title] {
+                margin-left: 24px;
+            }
 
-      paper-progress {
-        display: block;
-        width: 100%;
-        --paper-progress-active-color: rgba(255, 255, 255, 0.5);
-        --paper-progress-container-color: transparent;
-      }
+            paper-progress {
+                display: block;
+                width: 100%;
+                --paper-progress-active-color: rgba(255, 255, 255, 0.5);
+                --paper-progress-container-color: transparent;
+            }
 
-      app-header {
-        @apply --layout-fixed-top;
-        color: #fff;
-        --app-header-background-rear-layer: {
-          background-color: #ef6c00;
-        }
-      }
+            app-header {
+                @apply --layout-fixed-top;
+                color: #fff;
+                --app-header-background-rear-layer: {
+                    background-color: #ef6c00;
+                }
+            }
 
-      app-drawer {
-        --app-drawer-scrim-background: var(--secondary-color);
-        --app-drawer-content-container: {
-          background-color: var(--secondary-color);
-          /**
-           * background-color: #b0bec5;
-           **/
-        }
-      }
+            app-drawer {
+                --app-drawer-scrim-background: var(--secondary-color);
+                --app-drawer-content-container: {
+                    background-color: var(--secondary-color);
+                    /**
+                     * background-color: #b0bec5;
+                     **/
+                }
+            }
 
-      .drawer-contents a,
-      .drawer-contents a:hover,
-      .drawer-contents a:visited {
-        text-decoration: none;
-        color: black;
-      }
-    </style>
+            .drawer-contents a,
+            .drawer-contents a:hover,
+            .drawer-contents a:visited {
+                text-decoration: none;
+                color: black;
+            }
+        </style>
 
-    <app-configure></app-configure>
+        <app-config></app-config>
+        <app-location route="{{route}}" use-hash-as-path></app-location>
+        <app-route route="{{route}}" 
+                   pattern="/:module" 
+                   data="{{routeData}}" 
+                   tail="{{subroute}}">
+        </app-route>
 
-    <app-location route="{{route}}" use-hash-as-path></app-location>
-    <app-route route="{{route}}" 
-      pattern="/:module" 
-      data="{{routeData}}" 
-      tail="{{subroute}}">
-    </app-route>
+        <firebase-auth id="auth" user="{{user}}" provider="github" on-error="handleError"></firebase-auth>
+        <app-drawer-layout fullbleed narrow="{{narrow}}">
+            <app-drawer id="drawer" slot="drawer" swipe-open="[[narrow]]">
 
-    <app-drawer-layout fullbleed narrow="{{narrow}}">
-      <app-drawer id="drawer" slot="drawer" swipe-open="[[narrow]]">
+                <app-toolbar main-title class="sidebar-menu">
+                    [[appName]]
+                </app-toolbar>
 
-        <app-toolbar main-title class="sidebar-menu">
-          [[appName]]
-        </app-toolbar>
+                <template is="dom-if" if="[[_isAuthenticated(authority)]]">
+                    <div class="drawer-contents" auth-condition="has-authority">
+                        <a href="[[pathPrefix]]home">
+                            <paper-icon-item on-tap="openContent" toggles page-index$="home">
+                                <iron-icon icon="icons:home" item-icon slot="item-icon"></iron-icon>
+                                Home
+                            </paper-icon-item>
+                        </a>
 
-        <!--
-        <template is="dom-if" if="[[!_isAuthenticated(authority)]]">
-          <div class="drawer-contents" auth-condition="annonymous">
-            Please sign-in
-          </div>
-        </template>
-        -->
+                        <a href="[[pathPrefix]]import">
+                            <paper-icon-item on-tap="openContent" toggles page-index$="another">
+                                <iron-icon icon="icons:cloud-download" item-icon slot="item-icon"></iron-icon>
+                                Import
+                            </paper-icon-item>
+                        </a>
 
-        <template is="dom-if" if="[[_isAuthenticated(authority)]]">
-          <div class="drawer-contents" auth-condition="has-authority">
-            <a href="[[pathPrefix]]home">
-              <paper-icon-item on-tap="openContent" toggles page-index$="home">
-                <iron-icon icon="icons:home" item-icon slot="item-icon"></iron-icon>
-                Home
-              </paper-icon-item>
-            </a>
+                        <a href="[[pathPrefix]]instruments">
+                            <paper-icon-item>
+                                <iron-icon icon="av:playlist-add-check" item-icon slot="item-icon"></iron-icon>
+                                Instrument Code
+                            </paper-icon-item>
+                        </a>
 
-            <a href="[[pathPrefix]]import">
-              <paper-icon-item on-tap="openContent" toggles page-index$="another">
-                <iron-icon icon="icons:cloud-download" item-icon slot="item-icon"></iron-icon>
-                Import
-              </paper-icon-item>
-            </a>
+                        <a href="[[pathPrefix]]graph">
+                            <paper-icon-item>
+                                <iron-icon icon="icons:gavel" item-icon slot="item-icon"></iron-icon>
+                                Create Static Call Graph
+                            </paper-icon-item>
+                        </a>
 
-            <a href="[[pathPrefix]]instruments">
-              <paper-icon-item>
-                <iron-icon icon="av:playlist-add-check" item-icon slot="item-icon"></iron-icon>
-                Instrument Code
-              </paper-icon-item>
-            </a>
+                        <a href="[[pathPrefix]]gen-testcase">
+                            <paper-icon-item>
+                                <iron-icon icon="icons:add-box" item-icon slot="item-icon"></iron-icon>
+                                Generate Test Case
+                            </paper-icon-item>
+                        </a>
 
-            <a href="[[pathPrefix]]graph">
-              <paper-icon-item>
-                <iron-icon icon="icons:gavel" item-icon slot="item-icon"></iron-icon>
-                Create Static Call Graph
-              </paper-icon-item>
-            </a>
+                        <a href="[[pathPrefix]]refine">
+                            <paper-icon-item>
+                                <iron-icon icon="icons:thumbs-up-down" item-icon slot="item-icon"></iron-icon>
+                                Refine Input Data
+                            </paper-icon-item>
+                        </a>
 
-            <a href="[[pathPrefix]]gen-testcase">
-              <paper-icon-item>
-                <iron-icon icon="icons:add-box" item-icon slot="item-icon"></iron-icon>
-                Generate Test Case
-              </paper-icon-item>
-            </a>
+                        <a href="[[pathPrefix]]perform-test">
+                            <paper-icon-item>
+                                <iron-icon icon="notification:adb" item-icon slot="item-icon"></iron-icon>
+                                Perform Testing
+                            </paper-icon-item>
+                        </a>
 
-            <a href="[[pathPrefix]]refine">
-              <paper-icon-item>
-                <iron-icon icon="icons:thumbs-up-down" item-icon slot="item-icon"></iron-icon>
-                Refine Input Data
-              </paper-icon-item>
-            </a>
+                        <a href="[[pathPrefix]]evaluate">
+                            <paper-icon-item>
+                                <iron-icon icon="social:poll" item-icon slot="item-icon"></iron-icon>
+                                Evaluation
+                            </paper-icon-item>
+                        </a>
+                    </div>
+                </template>
+            </app-drawer>
 
-            <a href="[[pathPrefix]]perform-test">
-              <paper-icon-item>
-                <iron-icon icon="notification:adb" item-icon slot="item-icon"></iron-icon>
-                Perform Testing
-              </paper-icon-item>
-            </a>
+            <app-header-layout has-scrolling-region>
+                <!-- app-header slot="header" condenses reveals fixed effects="waterfall" -->
+                <app-header slot="header" fixed>
+                    <app-toolbar>
+                        <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
+                        <div main-title>[[appName]]</div>
 
-            <a href="[[pathPrefix]]evaluate">
-              <paper-icon-item>
-                <iron-icon icon="social:poll" item-icon slot="item-icon"></iron-icon>
-                Evaluation
-              </paper-icon-item>
-            </a>
-          </div>
-        </template>
-      </app-drawer>
+                        <template is="dom-if" if="[[!_isAuthenticated()]]">
+                            <paper-icon-button icon="icons:assignment-ind" on-tap="performAuthentication" title="Sign-in"></paper-icon-button>
+                        </template>
 
-      <app-header-layout has-scrolling-region>
-        <!-- app-header slot="header" condenses reveals fixed effects="waterfall" -->
-        <app-header slot="header" fixed>
-          <app-toolbar>
-            <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
-            <div main-title>[[appName]]</div>
-            <paper-icon-button icon="icons:assignment-ind" on-tap="performAuthentication" title="Sign-in"></paper-icon-button>
-            <paper-icon-button icon="icons:help"></paper-icon-button>
-            <paper-icon-button icon="search"></paper-icon-button>
-            <paper-progress id="overAllProgress" value="0" bottom-item></paper-progress>
-          </app-toolbar>
-        </app-header>
+                        <template is="dom-if" if="[[_isAuthenticated()]]">
+                            <paper-icon-button icon="icons:assignment-ind" on-tap="performAuthentication" title="Sign-in"></paper-icon-button>
+                        </template>
 
-        <template is="dom-if" if="[[_isAuthenticated(authority)]]">
-          <iron-pages selected="[[routeData.module]]" attr-for-selected="content-selector" fallback-selection="error-page">
-            <empty-page app-title="Controls" content-selector="error-page"></empty-page>
+                        <paper-icon-button icon="icons:help"></paper-icon-button>
+                        <paper-icon-button icon="search"></paper-icon-button>
+                        <paper-progress id="overAllProgress" value="0" bottom-item></paper-progress>
+                    </app-toolbar>
+                </app-header>
 
-            <home-page content-selector="home" user-information="[[user]]" location="[[subroute]]"></home-page>
-            <import-repository-page content-selector="import" location="[[subroute]]"></import-repository-page>
-            <instrument-source-code-page content-selector="instruments" location="[[subroute]]"></instrument-source-code-page>
-            <structure-static-call-graph-page content-selector="graph" location="[[subroute]]"></structure-static-call-graph-page>
-            <generate-test-case-page content-selector="gen-testcase" location="[[subroute]]"></generate-test-case-page>
-            <refine-input-data-page content-selector="refine" location="[{subroute}]"></refine-input-data-page>
-            <perform-test-page content-selector="perform-test" location="[[subroute]]"></perform-test-page>
-            <evaluate-page content-selector="evaluate" location="[[subroute]]"></evaluate-page>
+                <template is="dom-if" if="[[_isAuthenticated(authority)]]">
+                    <iron-pages selected="[[routeData.module]]" attr-for-selected="content-selector" fallback-selection="error-page">
+                        <empty-page app-title="Controls" content-selector="error-page"></empty-page>
 
-          </iron-pages>
-        </template>
-        <template is="dom-if" if="[[!_isAuthenticated(authority)]]">
-          <empty-page app-title="Controls annonymous"></empty-page>
-        </template>
-      </app-header-layout>
+                        <home-page content-selector="home" user-information="[[user]]" location="[[subroute]]"></home-page>
+                        <import-repository-page content-selector="import" location="[[subroute]]"></import-repository-page>
+                        <instrument-source-code-page content-selector="instruments" location="[[subroute]]"></instrument-source-code-page>
+                        <structure-static-call-graph-page content-selector="graph" location="[[subroute]]"></structure-static-call-graph-page>
+                        <generate-test-case-page content-selector="gen-testcase" location="[[subroute]]"></generate-test-case-page>
+                        <refine-input-data-page content-selector="refine" location="[{subroute}]"></refine-input-data-page>
+                        <perform-test-page content-selector="perform-test" location="[[subroute]]"></perform-test-page>
+                        <evaluate-page content-selector="evaluate" location="[[subroute]]"></evaluate-page>
 
-    </app-drawer-layout>
+                    </iron-pages>
+                </template>
+                <template is="dom-if" if="[[!_isAuthenticated(authority)]]">
+                    <empty-page app-title="Controls annonymous {{localize('home')}}"></empty-page>
+                </template>
+            </app-header-layout>
 
-  </template>
+        </app-drawer-layout>
 
-  <script>
-    /**
-     * @ustomElement
-     * @polymer
-     */
+    </template>
+
+    <script>
+/**
+* @ustomElement
+ * @polymer
+ */
     class ControlApp extends Polymer.Element {
       static get is() { return 'control-app'; }
       static get properties() {
         return {
+          language: {
+            value: 'en',
+          },
           pathPrefix: {
             type: String,
             value: "#/"
@@ -253,10 +257,6 @@
           user: {
             type: Object,
             notify: true,
-            value: {
-              "token": null,
-              "info": null
-            },
             observer: '_userStatusChangeObserver'
           },
           authority: {
@@ -271,59 +271,63 @@
         };
       }
 
+      static get behaviors() {
+        return [
+          Polymer.AppLocalizeBehavior
+        ];
+      }
+
       ready() {
         super.ready();
-        this.authority = (undefined == firebase.auth().currentUser) ? 'annonymous' : 'has-authority';
-        console.log(this.user);
+        this.authority = (undefined == this.$.auth.user) ? 'annonymous' : 'has-authority';
+        console.log(this.$.auth.user);
+      }
+
+      attached() {
+        super.attached();
+        this.loadResource(this.resolveUrl('locales.json'));
       }
 
       openContent(e) {
-        // console.log(e.pageIndex + '-page');
         this.contentSelector = e.pageIndex + '-page';
-        // this.$.drawer.opened = false;
       }
 
       performAuthentication() {
+        this.$.overAllProgress.value = 10;
+        this.$.overAllProgress.indeterminate = true;
+
         var _self = this;
-        firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-          .then(function() {
-            var provider = new firebase.auth.GithubAuthProvider();
-            provider.addScope('repo');
-            provider.setCustomParameters({
-              'allow_signup': 'false'
+
+        this.$.auth.signInWithPopup()
+            .then(function(response){
+                console.log(response)
+                _self.$.overAllProgress.indeterminate = false;
+                _self.authority = 'has-authority';
+                _self.set('user', response);
+                _self.set('route.path', '/home');
             })
-
-            return firebase.auth().signInWithPopup(provider).then(function(result) {
-              _self.user.token = result.credential.accessToken;
-              _self.user.info = result.user;
-              _self.authority = 'has-authority';
-              _self.set('route.path', '/home');
-            }).catch(function(error) {
-              var errorCode = error.code;
-              var errorMessage = error.message;
-              var email = error.email;
-
-              var email = error.credential;
+            .catch(function(error){
+                console.log(error);
+                _self.$.overAllProgress.indeterminate = false;
             });
-          }).catch(function(error) {
-            console.error(error);
-          })
       }
 
       _routeObserver(r) {
-        console.log(r);
       }
 
       _isAuthenticated(e) {
-        // this.authority = firebase.auth().currentUser ? 'has-authority' : 'annonymous' ;
         return undefined != firebase.auth().currentUser;
       }
 
       _userStatusChangeObserver(u) {
-        // console.log(u)
+        if (null != u) {
+            this.authority = 'has-authority';
+        } else {
+            this.authority = 'annonymous';
+        }
       }
     }
 
     window.customElements.define(ControlApp.is, ControlApp);
-  </script>
+    </script>
 </dom-module>
