@@ -1,0 +1,12 @@
+{
+    "en": {
+        "menu": "Menu",
+        "home": "Home",
+        "hello-user": "Hell, {name}"
+    },
+    "th": {
+        "menu": "เมนู",
+        "home": "หน้าแรก",
+        "hello-user": "สวัสดี {name}"
+    }
+}
