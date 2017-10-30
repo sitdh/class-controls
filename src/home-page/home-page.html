@@ -1,25 +1,78 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+
+<link rel="import" href="../../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-query.html">
 
 <dom-module id="home-page">
-    <template>
-        Home [[userInformation]]
-    </template>
-    <script>
-        class HomePageApp extends Polymer.Element {
-            static get is() { return 'home-page'; }
+  <template>
+    <firebase-auth user="{{user}}"></firebase-auth>
+    <firebase-query id="query" 
+      path="/users/[[user.uid]]/providers" 
+      data="{{userInfo}}">
+    </firebase-query>
+    <iron-ajax 
+      handle-as="json" 
+      content-type="application/json"
+      last-response="{{handleRepositories}}" 
+      last-response="{{handleError}}" 
+      loading="{{repositoriesFetching}}"
+      id="repositoriesList">
+    </iron-ajax>
+    <div main-title>Home</div> 
 
-            static get properties() {
-                return {
-                    location: {
-                        type: Object
-                    },
-                    userInformation: {
-                        type: Object,
-                        value: null
-                    }
-                }
-            }
+  </template>
+  <script>
+    class HomePageApp extends Polymer.Element {
+      static get is() { return 'home-page'; }
+      static get properties() {
+        return {
+          location: {
+            type: Object
+          },
+          user: {
+            type: Object,
+            value: null,
+            observer: '_userInfo',
+          },
+          additionalUserInformation: {
+            type: Object,
+            reflectToAttribute: true,
+            notify: true,
+            value: null,
+          },
+          handleRepositories: {
+            type: Object,
+            observer: '_handleRepositories',
+          },
+          handleError: {
+            type: Object,
+            observer: '_handleRepoError',
+          },
         }
-        window.customElements.define(HomePageApp.is, HomePageApp);
-    </script>
+      }
+
+      _userInfo(e) {
+        if (null != e) {
+          const data = this.$.query.ref.limitToFirst(1).once('value', snapshot => {
+            snapshot.forEach(child => {
+              const getProvider = child.val();
+              console.log(getProvider);
+              this.$.repositoriesList.url = getProvider.repos_url;
+              this.$.repositoriesList.generateRequest();
+            });
+          });
+        }
+      }
+
+      _handleRepositories(e) {
+        console.log(e);
+      }
+
+      _handleRepoError(e) {
+        console.error(e);
+      }
+    }
+    window.customElements.define(HomePageApp.is, HomePageApp);
+  </script>
 </dom-module>
