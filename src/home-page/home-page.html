@@ -1,11 +1,28 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
+
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
 
 <link rel="import" href="../../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="../../bower_components/polymerfire/firebase-query.html">
 
 <dom-module id="home-page">
   <template>
+    <style>
+      .repositories-container {
+        display: block;
+        width: 100%;
+        padding-left: 0;
+        margin: 0 auto;
+      }
+      .repositories-container li {
+        display: flex;
+        flex-basis: 100%;
+        margin-top: 5px;
+        margin-bottom: 5px;
+        list-style-position: inside;
+      }
+    </style>
     <firebase-auth user="{{user}}"></firebase-auth>
     <firebase-query id="query" 
       path="/users/[[user.uid]]/providers" 
@@ -20,6 +37,31 @@
       id="repositoriesList">
     </iron-ajax>
     <div main-title>Home</div> 
+
+    <ul id="repositories" class="repositories-container">
+      <template is="dom-repeat" items="[[handleRepositories]]">
+        <li>
+          <a href="[[item.html_url]]" title="[[item.name]]" target="_blank">
+            [[item.name]]
+          </a>
+        </li>
+      </template>
+      <li class="repository">
+        <div class="repo-lang">
+          <iron-image preload fade
+            src="src/home-page/images/java-file.svg" 
+            sizing="cover"
+            style="width: 400px; height: 400px;">
+          </iron-image>
+          ABC
+        </div>
+      </li>
+      <li class="repository">
+        <div class="repo-lang">
+          ABC
+        </div>
+      </li>
+    </ul>
 
   </template>
   <script>
@@ -57,16 +99,14 @@
           const data = this.$.query.ref.limitToFirst(1).once('value', snapshot => {
             snapshot.forEach(child => {
               const getProvider = child.val();
-              console.log(getProvider);
               this.$.repositoriesList.url = getProvider.repos_url;
-              this.$.repositoriesList.generateRequest();
+              // this.$.repositoriesList.generateRequest();
             });
           });
         }
       }
 
       _handleRepositories(e) {
-        console.log(e);
       }
 
       _handleRepoError(e) {
