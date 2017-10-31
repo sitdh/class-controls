@@ -1,0 +1,64 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-dropdown/iron-dropdown.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
+
+<link rel="import" href="../../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-query.html">
+
+<dom-module id="user-menu">
+  <template>
+    <style>
+
+      paper-icon-button {
+        size: 40px;
+      }
+
+      .clear-link {
+        color: white;
+      }
+
+    </style>
+    <firebase-auth user="{{user}}"></firebase-auth>
+
+    <paper-icon-button 
+      icon="icons:assignment-ind" 
+      on-tap="performAuthentication" 
+      title="[[user.displayName]]">
+    </paper-icon-button>
+    </a>
+  </template>
+
+  <script>
+    class UserMenuApp extends Polymer.Element {
+      static get is() { return 'user-menu'; }
+      static get properties() {
+        return {
+          user: {
+            type: Object,
+            notify: true,
+            observer: '_userUpdate',
+          },
+        };
+      }
+
+      ready() {
+        super.ready();
+        console.log('Hello');
+      }
+
+      _userUpdate(u) {
+        if (null != u) {
+          console.log(u);
+        }
+      }
+
+      signout() {
+        firebase.auth().signOut();
+      }
+    }
+    window.customElements.define(UserMenuApp.is, UserMenuApp);
+  </script>
+</dom-module>

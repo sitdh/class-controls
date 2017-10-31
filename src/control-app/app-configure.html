@@ -1,15 +1,16 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 
 <link rel="import" href="../../bower_components/polymerfire/firebase-app.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-auth.html">
 
 <dom-module id="app-configure">
     <firebase-app id="control-config" 
-        auth-domain="" 
-        database-url="" 
-        api-key="" 
-        storage-bucket="" 
-        messaging-sender-id="" 
-        project-id="">
+        auth-domain="scg-controls.firebaseapp.com" 
+        database-url="https://scg-controls.firebaseio.com" 
+        api-key="AIzaSyBUd4VPhv3UYqjJHOsguwW-tCNtMimw3Qo" 
+        storage-bucket="scg-controls.appspot.com" 
+        messaging-sender-id="391529321954" 
+        project-id="scg-controls">
     </firebase-app>
     <script>
         class ApplicationConfigureElement extends Polymer.Element {

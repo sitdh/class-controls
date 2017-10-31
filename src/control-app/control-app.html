@@ -22,11 +22,13 @@
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../bower_components/paper-progress/paper-progress.html">
 <link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
 
 <link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
 
 <link rel="import" href="empty-page.html">
 <link rel="import" href="app-configure.html">
+<link rel="import" href="user-menu.html">
 
 <link rel="import" href="../home-page/home-page.html">
 <link rel="import" href="../import-repository-page/import-repository-page.html">
@@ -40,67 +42,67 @@
 <dom-module id="control-app">
   <template>
     <style is="custom-style">
-:host {
-  display: block;
-  margin: 0;
-  font-family: 'Roboto', 'Noto', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  background: #f1f1f1;
-  max-height: 368px;
-  --primary-color: var(--paper-light-blue-800);
-  --secondary-color: var(--paper-blue-grey-200);
-  --based-color: #f1f1f1;
-  margin-top: 70px;
-}
+      :host {
+        display: block;
+        margin: 0;
+        font-family: 'Roboto', 'Noto', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        background: #f1f1f1;
+        max-height: 368px;
+        --primary-color: var(--paper-light-blue-800);
+        --secondary-color: var(--paper-blue-grey-200);
+        --based-color: #f1f1f1;
+        margin-top: 70px;
+      }
 
-            app-drawer-layout:not([narrow]) [drawer-toggle] {
-              display: none;
-            }
+      app-drawer-layout:not([narrow]) [drawer-toggle] {
+        display: none;
+      }
 
-            app-toolbar {
-              background-color: var(--primary-color);
-              color: #fff;
-            }
+      app-toolbar {
+        background-color: var(--primary-color);
+        color: #fff;
+      }
 
-            paper-icon-button {
-              --paper-icion-button-ink-color: white;
-            }
+      paper-icon-button {
+        --paper-icion-button-ink-color: white;
+      }
 
-            paper-icon-button + [main-title] {
-              margin-left: 24px;
-            }
+      paper-icon-button + [main-title] {
+        margin-left: 24px;
+      }
 
-            paper-progress {
-              display: block;
-              width: 100%;
-              --paper-progress-active-color: rgba(255, 255, 255, 0.5);
-              --paper-progress-container-color: transparent;
-            }
+      paper-progress {
+        display: block;
+        width: 100%;
+        --paper-progress-active-color: rgba(255, 255, 255, 0.5);
+        --paper-progress-container-color: transparent;
+      }
 
-            app-header {
-              @apply --layout-fixed-top;
-              color: #fff;
-              --app-header-background-rear-layer: {
-                background-color: #ef6c00;
-              }
-            }
+      app-header {
+        @apply --layout-fixed-top;
+        color: #fff;
+        --app-header-background-rear-layer: {
+          background-color: #ef6c00;
+        }
+      }
 
-            app-drawer {
-              --app-drawer-scrim-background: var(--secondary-color);
-              --app-drawer-content-container: {
-                background-color: var(--secondary-color);
-                /**
-                 * background-color: #b0bec5;
-                 **/
-              }
-            }
+      app-drawer {
+        --app-drawer-scrim-background: var(--secondary-color);
+        --app-drawer-content-container: {
+          background-color: var(--secondary-color);
+          /**
+           * background-color: #b0bec5;
+           **/
+        }
+      }
 
-            .drawer-contents a,
-            .drawer-contents a:hover,
-            .drawer-contents a:visited {
-              text-decoration: none;
-              color: black;
-            }
+      .drawer-contents a,
+      .drawer-contents a:hover,
+      .drawer-contents a:visited {
+        text-decoration: none;
+        color: black;
+      }
     </style>
 
     <app-config></app-config>
@@ -120,6 +122,7 @@
       path="/users/[[user.uid]]/providers" 
       data="{{profileData}}">
     </firebase-query>
+
     <app-drawer-layout fullbleed narrow="{{narrow}}">
       <app-drawer id="drawer" slot="drawer" swipe-open="[[narrow]]">
 
@@ -127,7 +130,7 @@
           [[appName]]
         </app-toolbar>
 
-        <template is="dom-if" if="[[_isAuthenticated(authority)]]">
+        <template is="dom-if" if="[[isAuthenticated]]">
           <div class="drawer-contents" auth-condition="has-authority">
             <a href="[[pathPrefix]]home">
               <paper-icon-item on-tap="openContent" toggles page-index$="home">
@@ -195,12 +198,20 @@
             <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
             <div main-title>[[appName]]</div>
 
-            <template is="dom-if" if="[[!_isAuthenticated()]]">
-              <paper-icon-button icon="icons:assignment-ind" on-tap="performAuthentication" title="Sign-in"></paper-icon-button>
+            <!-- Annonymous user, Have no authority -->
+            <template is="dom-if" if="[[!isAuthenticated]]">
+              <paper-icon-button icon="icons:fingerprint" on-tap="performAuthentication" title="Sign in"></paper-icon-button>
             </template>
 
-            <template is="dom-if" if="[[_isAuthenticated()]]">
-              <paper-icon-button icon="icons:assignment-ind" on-tap="performAuthentication" title="Sign-in"></paper-icon-button>
+            <!-- User logged in -->
+            <template is="dom-if" if="[[isAuthenticated]]">
+              <!--
+              <paper-icon-button icon="icons:assignment-ind" title="Sign out"></paper-icon-button>
+              -->
+              <paper-button on-tap="preformSignout">
+                <iron-icon icon="icons:account-circle"></iron-icon>
+                [[user.displayName]]
+              </paper-button>
             </template>
 
             <paper-icon-button icon="icons:help"></paper-icon-button>
@@ -209,13 +220,10 @@
           </app-toolbar>
         </app-header>
 
-        <template is="dom-if" if="[[_isAuthenticated(authority)]]">
+        <template is="dom-if" if="[[isAuthenticated]]">
           <iron-pages selected="[[routeData.module]]" attr-for-selected="content-selector" fallback-selection="error-page">
             <empty-page app-title="Controls" content-selector="error-page"></empty-page>
-
-            <home-page content-selector="home" 
-               location="[[subroute]]">
-            </home-page>
+            <home-page content-selector="home" location="[[subroute]]"> </home-page>
             <import-repository-page content-selector="import" location="[[subroute]]"></import-repository-page>
             <instrument-source-code-page content-selector="instruments" location="[[subroute]]"></instrument-source-code-page>
             <structure-static-call-graph-page content-selector="graph" location="[[subroute]]"></structure-static-call-graph-page>
@@ -226,7 +234,7 @@
 
           </iron-pages>
         </template>
-        <template is="dom-if" if="[[!_isAuthenticated(authority)]]">
+        <template is="dom-if" if="[[!isAuthenticated]]">
           <empty-page app-title="Controls annonymous {{localize('home')}}"></empty-page>
         </template>
       </app-header-layout>
@@ -259,7 +267,6 @@
           routeData: {
             type: Object,
             notify: true,
-            observer: '_routeObserver',
           },
           subroute: {
             type: Object,
@@ -285,7 +292,12 @@
           selectedContent: {
             type: String,
             notify: true,
-          }
+          },
+          isAuthenticated: {
+            type: Boolean,
+            notify: true,
+            observer: '_updateRoute',
+          },
         };
       }
 
@@ -312,10 +324,11 @@
             } else {
               console.log('not saved');
             }
+            this.isAuthenticated = true;
 
           } else {
             this.authority = 'annonymous';
-            console.log("Not auth yet");
+            this.isAuthenticated = false;
           }
         });
       }
@@ -345,13 +358,17 @@
           });
       }
 
-      _routeObserver(r) {
+      _updateRoute() {
+        if (this.isAuthenticated) {
+          this.set('route.path', '/home');
+        } else {
+          this.set('route.path', '/');
+        }
       }
 
-      _isAuthenticated(e) {
-        return undefined != firebase.auth().currentUser;
+      preformSignout() {
+        firebase.auth().signOut();
       }
-
       // _userStatusChangeObserver(u) {
       //   if (null != u) {
       //     this.authority = 'has-authority';
